@@ -37,3 +37,6 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### DatasourceCinfig ###
+src/main/java/futurenet/fullstack/DataSourceConfig.java
