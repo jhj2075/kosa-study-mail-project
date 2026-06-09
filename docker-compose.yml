@@ -1,0 +1,99 @@
+services:
+  oracle-db:
+    profiles: [ "infra" ]
+    image: gvenzl/oracle-free:23-slim
+    environment:
+      ORACLE_PASSWORD: oracle
+      APP_USER: mail_app
+      APP_USER_PASSWORD: mail_app
+    ports:
+      - "1521:1521"
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+      - ./database/ddl/01_schema.sql:/container-entrypoint-initdb.d/01_schema.sql:ro
+      - ./database/dml/01_seed.sql:/container-entrypoint-initdb.d/02_seed.sql:ro
+    healthcheck:
+      test: [ "CMD", "healthcheck.sh" ]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  rabbitmq:
+    profiles: [ "infra" ]
+    image: rabbitmq:4-management
+    environment:
+      RABBITMQ_DEFAULT_USER: mail_app
+      RABBITMQ_DEFAULT_PASS: mail_app
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  reservation-service:
+    profiles: [ "app" ]
+    build:
+      context: .
+      dockerfile: docker/service.Dockerfile
+      args:
+        JAR_FILE: services/reservation-service/build/libs/reservation-service-1.0-SNAPSHOT.jar
+    depends_on:
+      oracle-db:
+        condition: service_healthy
+    environment:
+      ORACLE_DB_URL: jdbc:oracle:thin:@oracle-db:1521/FREEPDB1
+      ORACLE_DB_USERNAME: mail_app
+      ORACLE_DB_PASSWORD: mail_app
+      JWT_SECRET: study-project-shared-secret-change-me
+    ports:
+      - "8082:8082"
+
+  scheduler-service:
+    profiles: [ "app" ]
+    build:
+      context: .
+      dockerfile: docker/service.Dockerfile
+      args:
+        JAR_FILE: services/scheduler-service/build/libs/scheduler-service-1.0-SNAPSHOT.jar
+    depends_on:
+      oracle-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      ORACLE_DB_URL: jdbc:oracle:thin:@oracle-db:1521/FREEPDB1
+      ORACLE_DB_USERNAME: mail_app
+      ORACLE_DB_PASSWORD: mail_app
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USERNAME: mail_app
+      RABBITMQ_PASSWORD: mail_app
+    ports:
+      - "8083:8083"
+
+  mail-worker-service:
+    profiles: [ "app" ]
+    build:
+      context: .
+      dockerfile: docker/service.Dockerfile
+      args:
+        JAR_FILE: services/mail-worker-service/build/libs/mail-worker-service-1.0-SNAPSHOT.jar
+    depends_on:
+      oracle-db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      ORACLE_DB_URL: jdbc:oracle:thin:@oracle-db:1521/FREEPDB1
+      ORACLE_DB_USERNAME: mail_app
+      ORACLE_DB_PASSWORD: mail_app
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USERNAME: mail_app
+      RABBITMQ_PASSWORD: mail_app
+    ports:
+      - "8084:8084"
+
+volumes:
+  oracle-data:

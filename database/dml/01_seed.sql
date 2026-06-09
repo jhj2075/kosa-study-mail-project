@@ -1,0 +1,87 @@
+ALTER SESSION SET CURRENT_SCHEMA = MAIL_APP;
+
+INSERT INTO USERS (
+    USER_ID,
+    LOGIN_ID,
+    PASSWORD,
+    USER_NAME,
+    EMAIL,
+    STATUS
+) VALUES (
+    1,
+    'study_user',
+    '$2a$10$replace-with-bcrypt-password-hash',
+    'Study User',
+    'study-user@example.com',
+    'ACTIVE'
+);
+
+INSERT INTO EMAIL_RESERVATION (
+    EMAIL_ID,
+    USER_ID,
+    SUBJECT,
+    CONTENT,
+    RECEIVER_EMAIL,
+    RESERVE_DATETIME,
+    STATUS
+) VALUES (
+    1,
+    1,
+    'RabbitMQ reservation mail test',
+    'This message is waiting for the scheduler to publish a mail job.',
+    'receiver@example.com',
+    SYSTIMESTAMP + INTERVAL '10' MINUTE,
+    'WAITING'
+);
+
+INSERT INTO EMAIL_RESERVATION (
+    EMAIL_ID,
+    USER_ID,
+    SUBJECT,
+    CONTENT,
+    RECEIVER_EMAIL,
+    RESERVE_DATETIME,
+    STATUS
+) VALUES (
+    2,
+    1,
+    'Already queued sample',
+    'This sample represents a mail job already published to RabbitMQ.',
+    'receiver@example.com',
+    SYSTIMESTAMP - INTERVAL '5' MINUTE,
+    'QUEUED'
+);
+
+INSERT INTO EMAIL_QUEUE (
+    QUEUE_ID,
+    EMAIL_ID,
+    EXCHANGE_NAME,
+    ROUTING_KEY,
+    MESSAGE_ID,
+    PAYLOAD,
+    STATUS
+) VALUES (
+    1,
+    2,
+    'mail.exchange',
+    'mail.send',
+    'sample-message-1',
+    '{"mailId":2}',
+    'PUBLISHED'
+);
+
+INSERT INTO EMAIL_SEND_LOG (
+    LOG_ID,
+    EMAIL_ID,
+    QUEUE_ID,
+    STATUS,
+    MESSAGE
+) VALUES (
+    1,
+    2,
+    1,
+    'QUEUED',
+    'Sample queue publish log'
+);
+
+COMMIT;

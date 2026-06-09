@@ -1,0 +1,35 @@
+server:
+  port: ${MAIL_WORKER_SERVICE_PORT:8084}
+
+spring:
+  config:
+    import:
+      - optional:file:./local.properties
+      - optional:file:../../local.properties
+  application:
+    name: mail-worker-service
+  datasource:
+    driver-class-name: oracle.jdbc.OracleDriver
+    url: ${ORACLE_DB_URL:jdbc:oracle:thin:@localhost:1521/FREEPDB1}
+    username: ${ORACLE_DB_USERNAME:mail_app}
+    password: ${ORACLE_DB_PASSWORD:mail_app}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+
+mail-queue:
+  exchange: ${MAIL_EXCHANGE:mail.exchange}
+  routing-key: ${MAIL_ROUTING_KEY:mail.send}
+  queue: ${MAIL_QUEUE:mail.send.queue}
+  dead-letter-exchange: ${MAIL_DLX:mail.dlx}
+  dead-letter-queue: ${MAIL_DLQ:mail.send.dlq}

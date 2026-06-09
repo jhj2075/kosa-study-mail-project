@@ -1,1 +1,5 @@
 rootProject.name = 'kosa-mini-project'
+
+include 'services:reservation-service'
+include 'services:scheduler-service'
+include 'services:mail-worker-service'

@@ -1,0 +1,29 @@
+server:
+  port: ${SCHEDULER_SERVICE_PORT:8083}
+
+spring:
+  config:
+    import:
+      - optional:file:./local.properties
+      - optional:file:../../local.properties
+  application:
+    name: scheduler-service
+  datasource:
+    driver-class-name: oracle.jdbc.OracleDriver
+    url: ${ORACLE_DB_URL:jdbc:oracle:thin:@localhost:1521/FREEPDB1}
+    username: ${ORACLE_DB_USERNAME:mail_app}
+    password: ${ORACLE_DB_PASSWORD:mail_app}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+
+mail-queue:
+  exchange: ${MAIL_EXCHANGE:mail.exchange}
+  routing-key: ${MAIL_ROUTING_KEY:mail.send}
+  queue: ${MAIL_QUEUE:mail.send.queue}
+  scheduler-fixed-delay-ms: ${MAIL_SCHEDULER_FIXED_DELAY_MS:60000}
