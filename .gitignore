@@ -40,3 +40,5 @@ build/
 
 src/main/resources/application-local.properties
 local.properties
+
+.idea
