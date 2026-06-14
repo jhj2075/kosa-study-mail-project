@@ -8,4 +8,7 @@ import futurenet.fullstack.auth.entity.User;
 public interface UserMapper {
 
     User findByEmail(String email);
+    int insertUser(User user);
+
 }
+

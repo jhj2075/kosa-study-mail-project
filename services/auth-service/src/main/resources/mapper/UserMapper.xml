@@ -19,5 +19,22 @@
         WHERE EMAIL = #{email}
 
     </select>
+    
+    <insert id="insertUser"
+        parameterType="futurenet.fullstack.auth.entity.User">
+
+    INSERT INTO USERS (
+        EMAIL,
+        PASSWORD,
+        NAME,
+        ROLE
+    ) VALUES (
+        #{email},
+        #{password},
+        #{name},
+        #{role}
+    )
+
+</insert>
 
 </mapper>
