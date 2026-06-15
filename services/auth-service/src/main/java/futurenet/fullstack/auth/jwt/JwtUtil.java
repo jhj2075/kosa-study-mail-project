@@ -28,13 +28,13 @@ public class JwtUtil {
         Date expiration = new Date(now.getTime() + EXPIRATION_TIME);
 
         return Jwts.builder()
-                .subject(user.getEmail())
-                .claim("userId", user.getUserId())
+                .subject(user.getEmail())           //jwt의 주인
+                .claim("userId", user.getUserId())  //사용자 정의 정보
                 .claim("name", user.getName())
                 .claim("role", user.getRole())
-                .issuedAt(now)
-                .expiration(expiration)
-                .signWith(getSigningKey())
+                .issuedAt(now)                      //언제 발급했는지
+                .expiration(expiration)             //만료일
+                .signWith(getSigningKey())          //시그니처 생성부분
                 .compact();
     }
 
