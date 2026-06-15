@@ -1,5 +1,6 @@
-rootProject.name = 'kosa-mini-project'
+rootProject.name = 'kosa-study-mail-project'
 
 include 'services:reservation-service'
 include 'services:scheduler-service'
 include 'services:mail-worker-service'
+include 'services:auth-service'
