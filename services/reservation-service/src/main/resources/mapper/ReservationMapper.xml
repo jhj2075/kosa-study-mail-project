@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="futurenet.fullstack.reservation.mapper.ReservationMapper">
+
+  <resultMap id="reservationResultMap"
+    type="futurenet.fullstack.reservation.domain.EmailReservation">
+
+    <id property="emailId" column="EMAIL_ID"/>
+
+    <result property="userId" column="USER_ID"/>
+    <result property="subject" column="SUBJECT"/>
+    <result property="content" column="CONTENT"/>
+    <result property="receiverEmail" column="RECEIVER_EMAIL"/>
+    <result property="reserveDatetime" column="RESERVE_DATETIME"/>
+    <result property="sentDatetime" column="SENT_DATETIME"/>
+    <result property="status" column="STATUS"/>
+    <result property="createdAt" column="CREATED_AT"/>
+    <result property="updatedAt" column="UPDATED_AT"/>
+  </resultMap>
+
+  <sql id="reservationColumns">
+    EMAIL_ID,
+    USER_ID,
+    SUBJECT,
+    CONTENT,
+    RECEIVER_EMAIL,
+    RESERVE_DATETIME,
+    SENT_DATETIME,
+    STATUS,
+    CREATED_AT,
+    UPDATED_AT
+  </sql>
+
+  <insert id="insert"
+    parameterType="futurenet.fullstack.reservation.domain.EmailReservation"
+    useGeneratedKeys="true"
+    keyProperty="emailId"
+    keyColumn="EMAIL_ID">
+
+    INSERT INTO EMAIL_RESERVATION (
+    USER_ID,
+    SUBJECT,
+    CONTENT,
+    RECEIVER_EMAIL,
+    RESERVE_DATETIME,
+    STATUS
+    ) VALUES (
+    #{userId},
+    #{subject},
+    #{content, jdbcType=CLOB},
+    #{receiverEmail},
+    #{reserveDatetime},
+    #{status}
+    )
+  </insert>
+
+  <select id="findByIdAndUserId"
+    resultMap="reservationResultMap">
+
+    SELECT
+    <include refid="reservationColumns"/>
+    FROM EMAIL_RESERVATION
+    WHERE EMAIL_ID = #{emailId}
+    AND USER_ID = #{userId}
+  </select>
+
+  <select id="findAllByUserId"
+    resultMap="reservationResultMap">
+
+    SELECT
+    <include refid="reservationColumns"/>
+    FROM EMAIL_RESERVATION
+    WHERE USER_ID = #{userId}
+    ORDER BY CREATED_AT DESC
+  </select>
+
+  <update id="updateWaitingReservation"
+    parameterType="futurenet.fullstack.reservation.domain.EmailReservation">
+
+    UPDATE EMAIL_RESERVATION
+    SET SUBJECT = #{subject},
+    CONTENT = #{content, jdbcType=CLOB},
+    RECEIVER_EMAIL = #{receiverEmail},
+    RESERVE_DATETIME = #{reserveDatetime},
+    UPDATED_AT = CURRENT_TIMESTAMP
+    WHERE EMAIL_ID = #{emailId}
+    AND USER_ID = #{userId}
+    AND STATUS = 'WAITING'
+  </update>
+
+  <update id="cancelWaitingReservation">
+
+    UPDATE EMAIL_RESERVATION
+    SET STATUS = 'CANCELED',
+    UPDATED_AT = CURRENT_TIMESTAMP
+    WHERE EMAIL_ID = #{emailId}
+    AND USER_ID = #{userId}
+    AND STATUS = 'WAITING'
+  </update>
+
+  <delete id="deleteCanceledReservation">
+
+    DELETE FROM EMAIL_RESERVATION
+    WHERE EMAIL_ID = #{emailId}
+    AND USER_ID = #{userId}
+    AND STATUS = 'CANCELED'
+  </delete>
+
+</mapper>
