@@ -15,39 +15,52 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private static final String ACTIVE_STATUS = "ACTIVE";
+
     private final UserMapper userMapper;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
-    
+
     public LoginResponse login(LoginRequest request) {
-        User user = userMapper.findByEmail(request.getEmail());
+        User user = userMapper.findByLoginId(request.getLoginId());
 
         if (user == null) {
-            throw new RuntimeException("???? ?? ??????.");
+            throw new RuntimeException("Invalid login id or password.");
         }
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-          throw new RuntimeException("????? ???? ????.");
+            throw new RuntimeException("Invalid login id or password.");
+        }
+
+        if (!ACTIVE_STATUS.equals(user.getStatus())) {
+            throw new RuntimeException("Inactive user account.");
         }
 
         String accessToken = jwtUtil.generateToken(user);
 
         return new LoginResponse(accessToken, "Bearer");
     }
-    
+
     public void register(RegisterRequest request) {
-      User existingUser = userMapper.findByEmail(request.getEmail());
+        User existingLoginId = userMapper.findByLoginId(request.getLoginId());
 
-      if (existingUser != null) {
-          throw new RuntimeException("?? ???? ??????.");
-      }
+        if (existingLoginId != null) {
+            throw new RuntimeException("Login id already exists.");
+        }
 
-      User user = new User();
-      user.setEmail(request.getEmail());
-      user.setPassword(passwordEncoder.encode(request.getPassword()));
-      user.setName(request.getName());
-      user.setRole("USER");
+        User existingEmail = userMapper.findByEmail(request.getEmail());
 
-      userMapper.insertUser(user);
-  }
-}
+        if (existingEmail != null) {
+            throw new RuntimeException("Email already exists.");
+        }
+
+        User user = new User();
+        user.setLoginId(request.getLoginId());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setUserName(request.getUserName());
+        user.setEmail(request.getEmail());
+        user.setStatus(ACTIVE_STATUS);
+
+        userMapper.insertUser(user);
+    }
+}

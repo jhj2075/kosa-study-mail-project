@@ -20,10 +20,10 @@ public class AuthController {
     public LoginResponse login(@RequestBody LoginRequest request) {
         return authService.login(request);
     }
-    
+
     @PostMapping("/auth/register")
     public String register(@RequestBody RegisterRequest request) {
         authService.register(request);
-        return "???? ??";
+        return "registered";
     }
-}
+}

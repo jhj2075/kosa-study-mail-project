@@ -16,29 +16,29 @@ import io.jsonwebtoken.security.Keys;
 public class JwtUtil {
 
     private static final String SECRET_KEY = "this-is-a-very-long-secret-key-for-jwt-auth-service-123456";
-    private static final long EXPIRATION_TIME = 1000 * 60 * 60; // 1??
+    private static final long EXPIRATION_TIME = 1000 * 60 * 60;
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
     }
 
-    //??? ?? ?? JWT ??
     public String generateToken(User user) {
         Date now = new Date();
         Date expiration = new Date(now.getTime() + EXPIRATION_TIME);
 
         return Jwts.builder()
-                .subject(user.getEmail())           //jwt? ??
-                .claim("userId", user.getUserId())  //??? ?? ??
-                .claim("name", user.getName())
-                .claim("role", user.getRole())
-                .issuedAt(now)                      //?? ?????
-                .expiration(expiration)             //???
-                .signWith(getSigningKey())          //???? ????
+                .subject(user.getLoginId())
+                .claim("userId", user.getUserId())
+                .claim("loginId", user.getLoginId())
+                .claim("userName", user.getUserName())
+                .claim("email", user.getEmail())
+                .claim("status", user.getStatus())
+                .issuedAt(now)
+                .expiration(expiration)
+                .signWith(getSigningKey())
                 .compact();
     }
 
-    //JWT ??? Payload ??
     public Claims getClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())
@@ -47,12 +47,10 @@ public class JwtUtil {
                 .getPayload();
     }
 
-    //JWT ? subject(email ???)
-    public String getEmail(String token) {
+    public String getLoginId(String token) {
         return getClaims(token).getSubject();
     }
 
-    //?? ??? ??
     public boolean validateToken(String token) {
         try {
             getClaims(token);
@@ -61,4 +59,4 @@ public class JwtUtil {
             return false;
         }
     }
-}
+}
