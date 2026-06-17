@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>내 예약 메일</title>
+  <link rel="stylesheet" th:href="@{/css/reservations.css}">
+</head>
+<body>
+<main class="page-shell">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">My Scheduled Mail</p>
+      <h1>내 예약 메일</h1>
+      <p class="page-description">나중에 보낼 메일을 미리 작성하고 예약해둘 수 있어요.</p>
+    </div>
+    <a class="primary-button" th:href="@{/reservations/new}">메일 예약하기</a>
+  </header>
+
+  <p class="flash success" th:if="${message}" th:text="${message}"></p>
+  <p class="flash error" th:if="${error}" th:text="${error}"></p>
+
+  <section class="summary-panel" aria-label="예약 안내">
+    <div>
+      <strong>예약 대기</strong>
+      <span>발송 전인 메일은 수정하거나 취소할 수 있어요.</span>
+    </div>
+    <div>
+      <strong>예약 삭제</strong>
+      <span>취소된 예약은 목록에서 삭제할 수 있어요.</span>
+    </div>
+  </section>
+
+  <section class="reservation-list" aria-label="내 예약 메일 목록">
+    <div class="empty-state" th:if="${#lists.isEmpty(reservations)}">
+      <h2>아직 예약한 메일이 없어요.</h2>
+      <p>메일 예약하기 버튼으로 원하는 시간에 발송될 메일을 등록해보세요.</p>
+    </div>
+
+    <article class="reservation-card" th:each="reservation : ${reservations}">
+      <div class="card-main">
+        <div class="card-title-row">
+          <h2 th:text="${reservation.subject()}">제목</h2>
+          <span class="status"
+                th:classappend="${reservation.status().name().toLowerCase()}"
+                th:text="${reservation.status()}">WAITING</span>
+        </div>
+        <p class="receiver" th:text="${reservation.receiverEmail()}">receiver@example.com</p>
+        <p class="content-preview"
+           th:text="${#strings.isEmpty(reservation.content()) ? '내용 없음' : reservation.content()}">
+          내용
+        </p>
+      </div>
+
+      <dl class="meta-grid">
+        <div>
+          <dt>보낼 시간</dt>
+          <dd th:text="${#temporals.format(reservation.reserveDatetime(), 'yyyy-MM-dd HH:mm')}">
+            2026-06-17 10:00
+          </dd>
+        </div>
+        <div>
+          <dt>등록일</dt>
+          <dd th:text="${#temporals.format(reservation.createdAt(), 'yyyy-MM-dd HH:mm')}">2026-06-17
+            09:00
+          </dd>
+        </div>
+      </dl>
+
+      <div class="card-actions">
+        <a class="secondary-button"
+           th:if="${reservation.status().name() == 'WAITING'}"
+           th:href="@{/reservations/{emailId}/edit(emailId=${reservation.emailId()})}">
+          수정
+        </a>
+        <span class="secondary-button disabled"
+              th:unless="${reservation.status().name() == 'WAITING'}">수정</span>
+        <form method="post"
+              th:action="@{/reservations/{emailId}/cancel(emailId=${reservation.emailId()})}">
+          <button class="secondary-button"
+                  type="submit"
+                  th:disabled="${reservation.status().name() != 'WAITING'}">
+            취소
+          </button>
+        </form>
+        <form method="post"
+              th:action="@{/reservations/{emailId}/delete(emailId=${reservation.emailId()})}">
+          <button class="danger-button"
+                  type="submit"
+                  th:disabled="${reservation.status().name() != 'CANCELED'}">
+            삭제
+          </button>
+        </form>
+      </div>
+    </article>
+  </section>
+</main>
+</body>
+</html>
