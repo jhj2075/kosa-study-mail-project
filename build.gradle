@@ -37,7 +37,9 @@ project(':services') {
         enabled = false
     }
 }
+
 [
+        project(':services:auth-service'),
         project(':services:reservation-service'),
         project(':services:scheduler-service'),
         project(':services:mail-worker-service')
