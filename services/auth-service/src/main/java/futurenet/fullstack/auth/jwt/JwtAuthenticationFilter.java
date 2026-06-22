@@ -21,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     public static final String ACCESS_TOKEN_COOKIE_NAME = "ACCESS_TOKEN";
-
     private final JwtUtil jwtUtil;
 
     @Override
