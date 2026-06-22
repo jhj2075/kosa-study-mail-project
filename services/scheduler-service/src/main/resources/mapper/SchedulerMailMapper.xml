@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="futurenet.fullstack.scheduler.mapper.SchedulerMailMapper">
+
+  <resultMap id="reservationResultMap"
+    type="futurenet.fullstack.scheduler.domain.EmailReservation">
+    <id property="emailId" column="EMAIL_ID"/>
+    <result property="userId" column="USER_ID"/>
+    <result property="subject" column="SUBJECT"/>
+    <result property="content" column="CONTENT"/>
+    <result property="receiverEmail" column="RECEIVER_EMAIL"/>
+    <result property="reserveDatetime" column="RESERVE_DATETIME"/>
+  </resultMap>
+
+  <select id="findDueWaitingReservations"
+    resultMap="reservationResultMap">
+    SELECT
+      EMAIL_ID,
+      USER_ID,
+      SUBJECT,
+      CONTENT,
+      RECEIVER_EMAIL,
+      RESERVE_DATETIME
+    FROM EMAIL_RESERVATION
+    WHERE STATUS = 'WAITING'
+      AND RESERVE_DATETIME <![CDATA[<=]]> #{now}
+    ORDER BY RESERVE_DATETIME ASC, EMAIL_ID ASC
+  </select>
+
+  <update id="markProcessing">
+    UPDATE EMAIL_RESERVATION
+    SET STATUS = 'PROCESSING',
+        UPDATED_AT = CURRENT_TIMESTAMP
+    WHERE EMAIL_ID = #{emailId}
+      AND STATUS = 'WAITING'
+  </update>
+
+  <update id="markQueued">
+    UPDATE EMAIL_RESERVATION
+    SET STATUS = 'QUEUED',
+        UPDATED_AT = CURRENT_TIMESTAMP
+    WHERE EMAIL_ID = #{emailId}
+      AND STATUS = 'PROCESSING'
+  </update>
+
+  <update id="markFailed">
+    UPDATE EMAIL_RESERVATION
+    SET STATUS = 'FAILED',
+        UPDATED_AT = CURRENT_TIMESTAMP
+    WHERE EMAIL_ID = #{emailId}
+      AND STATUS = 'PROCESSING'
+  </update>
+
+  <insert id="insertQueue"
+    parameterType="futurenet.fullstack.scheduler.domain.EmailQueue"
+    useGeneratedKeys="true"
+    keyProperty="queueId"
+    keyColumn="QUEUE_ID">
+    INSERT INTO EMAIL_QUEUE (
+      EMAIL_ID,
+      EXCHANGE_NAME,
+      ROUTING_KEY,
+      MESSAGE_ID,
+      PAYLOAD,
+      STATUS
+    ) VALUES (
+      #{emailId},
+      #{exchangeName},
+      #{routingKey},
+      #{messageId},
+      #{payload, jdbcType=CLOB},
+      #{status}
+    )
+  </insert>
+
+  <insert id="insertSendLog">
+    INSERT INTO EMAIL_SEND_LOG (
+      EMAIL_ID,
+      QUEUE_ID,
+      STATUS,
+      MESSAGE
+    ) VALUES (
+      #{emailId},
+      #{queueId},
+      #{status},
+      #{message}
+    )
+  </insert>
+
+</mapper>
