@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>인증 완료</title>
+  <link rel="stylesheet" th:href="@{/css/auth.css}">
+</head>
+<body>
+<main class="auth-shell">
+  <section class="auth-panel">
+    <header class="auth-header">
+      <p class="eyebrow">Signed In</p>
+      <h1>로그인 완료</h1>
+      <p>
+        <strong th:text="${loginId}">loginId</strong>
+        계정으로 로그인되어 있습니다.
+      </p>
+    </header>
+
+    <form method="post" th:action="@{/logout}">
+      <button class="secondary-button" type="submit">로그아웃</button>
+    </form>
+  </section>
+</main>
+</body>
+</html>

@@ -23,8 +23,15 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
+                .logout(logout -> logout.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/",
+                                "/css/**",
+                                "/favicon.ico",
+                                "/login",
+                                "/register",
+                                "/logout",
                                 "/auth/test",
                                 "/auth/user-test",
                                 "/auth/login",
@@ -43,4 +50,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-}
+}
