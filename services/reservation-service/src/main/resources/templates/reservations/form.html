@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${mode == 'edit'} ? '예약 메일 수정' : '메일 예약하기'">메일 예약하기</title>
+  <link rel="stylesheet" th:href="@{/css/reservations.css}">
+</head>
+<body>
+<main class="page-shell narrow">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Schedule Mail</p>
+      <h1 th:text="${mode == 'edit'} ? '예약 메일 수정' : '메일 예약하기'">메일 예약하기</h1>
+      <p class="page-description">받는 사람과 내용을 입력하고 보낼 시간을 선택하세요.</p>
+    </div>
+    <a class="secondary-button" th:href="@{/reservations}">목록</a>
+  </header>
+
+  <section class="form-panel">
+    <form method="post"
+          th:object="${form}"
+          th:action="${mode == 'edit'} ? @{/reservations/{emailId}/edit(emailId=${emailId})} : @{/reservations}">
+      <div class="form-errors" th:if="${#fields.hasGlobalErrors()}">
+        <p th:each="err : ${#fields.globalErrors()}" th:text="${err.defaultMessage}">오류</p>
+      </div>
+
+      <div class="field-row">
+        <label for="receiverEmail">받는 사람</label>
+        <input id="receiverEmail" type="email" th:field="*{receiverEmail}" placeholder="name@example.com">
+        <p class="field-error" th:if="${#fields.hasErrors('receiverEmail')}" th:errors="*{receiverEmail}"></p>
+      </div>
+
+      <div class="field-row">
+        <label for="reserveDatetime">보낼 시간</label>
+        <input id="reserveDatetime" type="datetime-local" step="60" th:field="*{reserveDatetime}">
+        <p class="field-help">예약 시간은 분 단위로 선택할 수 있어요.</p>
+        <p class="field-error" th:if="${#fields.hasErrors('reserveDatetime')}" th:errors="*{reserveDatetime}"></p>
+      </div>
+
+      <div class="field-row">
+        <label for="subject">제목</label>
+        <input id="subject" type="text" maxlength="255" th:field="*{subject}" placeholder="메일 제목">
+        <p class="field-error" th:if="${#fields.hasErrors('subject')}" th:errors="*{subject}"></p>
+      </div>
+
+      <div class="field-row">
+        <label for="content">내용</label>
+        <textarea id="content" rows="12" th:field="*{content}" placeholder="보낼 내용을 입력하세요."></textarea>
+      </div>
+
+      <div class="form-actions">
+        <a class="secondary-button" th:href="@{/reservations}">취소</a>
+        <button class="primary-button" type="submit"
+                th:text="${mode == 'edit'} ? '수정 완료' : '예약하기'">
+          저장
+        </button>
+      </div>
+    </form>
+  </section>
+</main>
+</body>
+</html>
