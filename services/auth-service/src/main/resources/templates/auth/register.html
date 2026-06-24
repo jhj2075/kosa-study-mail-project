@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>회원가입</title>
+  <link rel="stylesheet" th:href="@{/css/auth.css}">
+</head>
+<body>
+<main class="auth-shell">
+  <section class="auth-panel">
+    <header class="auth-header">
+      <p class="eyebrow">Create Account</p>
+      <h1>회원가입</h1>
+      <p>예약 메일 서비스를 사용할 계정을 등록하세요.</p>
+    </header>
+
+    <p class="flash error" th:if="${error}" th:text="${error}"></p>
+
+    <form method="post" th:object="${registerRequest}" th:action="@{/register}">
+      <div class="field-row">
+        <label for="loginId">아이디</label>
+        <input id="loginId" type="text" th:field="*{loginId}" maxlength="50" autocomplete="username" autofocus>
+      </div>
+
+      <div class="field-row">
+        <label for="userName">이름</label>
+        <input id="userName" type="text" th:field="*{userName}" maxlength="100" autocomplete="name">
+      </div>
+
+      <div class="field-row">
+        <label for="email">이메일</label>
+        <input id="email" type="email" th:field="*{email}" maxlength="255" autocomplete="email">
+      </div>
+
+      <div class="field-row">
+        <label for="password">비밀번호</label>
+        <input id="password" type="password" th:field="*{password}" autocomplete="new-password">
+      </div>
+
+      <button class="primary-button" type="submit">회원가입</button>
+    </form>
+
+    <p class="auth-link">
+      이미 계정이 있나요?
+      <a th:href="@{/login}">로그인</a>
+    </p>
+  </section>
+</main>
+</body>
+</html>
