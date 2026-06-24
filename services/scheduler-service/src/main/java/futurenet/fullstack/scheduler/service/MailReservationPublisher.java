@@ -3,8 +3,8 @@ package futurenet.fullstack.scheduler.service;
 import futurenet.fullstack.scheduler.config.MailQueueProperties;
 import futurenet.fullstack.scheduler.domain.EmailQueue;
 import futurenet.fullstack.scheduler.domain.EmailReservation;
+import futurenet.fullstack.scheduler.dto.MailSendMessage;
 import futurenet.fullstack.scheduler.mapper.SchedulerMailMapper;
-import futurenet.fullstack.scheduler.message.MailSendMessage;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -14,6 +14,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.json.JsonMapper;
 
 @Slf4j
 @Service
@@ -23,6 +24,7 @@ public class MailReservationPublisher {
   private final SchedulerMailMapper schedulerMailMapper;
   private final RabbitTemplate rabbitTemplate;
   private final MailQueueProperties mailQueueProperties;
+  private final JsonMapper jsonMapper;
 
   @Scheduled(fixedDelayString = "${mail-queue.scheduler-fixed-delay-ms:60000}")
   public void publishDueReservations() {
@@ -54,14 +56,15 @@ public class MailReservationPublisher {
 
     String messageId = UUID.randomUUID().toString();
     MailSendMessage message = MailSendMessage.from(reservation, messageId);
-    String payload = message.toJson();
 
     try {
       // RabbitMQ publish
+      String payload = jsonMapper.writeValueAsString(message);
+
       rabbitTemplate.convertAndSend(
           mailQueueProperties.exchange(),
           mailQueueProperties.routingKey(),
-          payload
+          message
       );
 
       // EMAIL_QUEUE 저장

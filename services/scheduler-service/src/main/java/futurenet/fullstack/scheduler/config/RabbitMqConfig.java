@@ -5,11 +5,12 @@ import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.amqp.support.converter.SimpleMessageConverter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
 @EnableConfigurationProperties(MailQueueProperties.class)
@@ -37,8 +38,13 @@ public class RabbitMqConfig {
   }
 
   @Bean
-  public MessageConverter messageConverter() {
-    return new SimpleMessageConverter();
+  public JsonMapper jsonMapper() {
+    return new JsonMapper();
+  }
+
+  @Bean
+  public MessageConverter messageConverter(JsonMapper jsonMapper) {
+    return new JacksonJsonMessageConverter(jsonMapper);
   }
 
   @Bean
