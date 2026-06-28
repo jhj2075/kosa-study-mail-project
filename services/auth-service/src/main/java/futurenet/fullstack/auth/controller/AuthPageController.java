@@ -2,6 +2,7 @@ package futurenet.fullstack.auth.controller;
 
 import java.time.Duration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
@@ -30,13 +31,16 @@ public class AuthPageController {
 
     private final AuthService authService;
 
+    @Value("${reservation-service.reservations-url:http://localhost:8082/reservations}")
+    private String reservationsUrl;
+
     @GetMapping("/")
     public String root(Authentication authentication) {
         if (authentication == null) {
             return "redirect:/login";
         }
 
-        return "redirect:/home";
+        return redirectToReservations();
     }
 
     @GetMapping("/login")
@@ -57,7 +61,7 @@ public class AuthPageController {
         try {
             LoginResponse loginResponse = authService.login(request);
             response.addHeader(HttpHeaders.SET_COOKIE, createAccessTokenCookie(loginResponse.getAccessToken()));
-            return "redirect:/home";
+            return redirectToReservations();
         } catch (RuntimeException e) {
             model.addAttribute("error", LOGIN_ERROR_MESSAGE);
             return "auth/login";
@@ -120,5 +124,9 @@ public class AuthPageController {
                 .maxAge(Duration.ZERO)
                 .build()
                 .toString();
+    }
+
+    private String redirectToReservations() {
+        return "redirect:" + reservationsUrl;
     }
 }

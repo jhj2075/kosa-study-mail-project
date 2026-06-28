@@ -11,4 +11,7 @@ spring:
     password: ${ORACLE_DB_PASSWORD:mail_app}
 
 mybatis:
-  mapper-locations: classpath:mapper/**/*.xml
+  mapper-locations: classpath:mapper/**/*.xml
+
+reservation-service:
+  reservations-url: ${RESERVATION_SERVICE_RESERVATIONS_URL:http://localhost:8082/reservations}
