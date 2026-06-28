@@ -32,8 +32,6 @@ public class SecurityConfig {
                                 "/login",
                                 "/register",
                                 "/logout",
-                                "/auth/test",
-                                "/auth/user-test",
                                 "/auth/login",
                                 "/auth/register"
                         ).permitAll()
