@@ -7,7 +7,6 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
-import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.json.JsonMapper;
@@ -21,8 +20,8 @@ public class MailQueueConsumer {
   private final JsonMapper jsonMapper;
 
   @RabbitListener(queues = "${mail-queue.queue}")
-  public void consume(Message rawMessage) {
-    MailSendMessage message = parseMessage(rawMessage);
+  public void consume(byte[] body) {
+    MailSendMessage message = parseMessage(body);
     log.info("Received mail send message. emailId={}, messageId={}",
         message.emailId(),
         message.messageId()
@@ -30,8 +29,8 @@ public class MailQueueConsumer {
     mailDeliveryService.deliver(message);
   }
 
-  private MailSendMessage parseMessage(Message rawMessage) {
-    String payload = new String(rawMessage.getBody(), StandardCharsets.UTF_8);
+  private MailSendMessage parseMessage(byte[] body) {
+    String payload = new String(body, StandardCharsets.UTF_8);
 
     try {
       Map<String, Object> values = jsonMapper.readValue(payload, Map.class);
