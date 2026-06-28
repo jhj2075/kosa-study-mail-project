@@ -1,10 +1,12 @@
 package futurenet.fullstack.auth.jwt;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Date;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import futurenet.fullstack.auth.entity.User;
@@ -15,16 +17,24 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 
-    private static final String SECRET_KEY = "this-is-a-very-long-secret-key-for-jwt-auth-service-123456";
-    private static final long EXPIRATION_TIME = 1000 * 60 * 60;
+    private final SecretKey signingKey;
+    private final long expirationTime;
+
+    public JwtUtil(
+            @Value("${jwt.secret}") String secretKey,
+            @Value("${jwt.access-token-expire-minutes:60}") long accessTokenExpireMinutes
+    ) {
+        this.signingKey = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+        this.expirationTime = Duration.ofMinutes(accessTokenExpireMinutes).toMillis();
+    }
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+        return signingKey;
     }
 
     public String generateToken(User user) {
         Date now = new Date();
-        Date expiration = new Date(now.getTime() + EXPIRATION_TIME);
+        Date expiration = new Date(now.getTime() + expirationTime);
 
         return Jwts.builder()
                 .subject(user.getLoginId())

@@ -2,6 +2,10 @@ server:
   port: ${AUTH_SERVICE_PORT:8081}
 
 spring:
+  config:
+    import:
+      - optional:file:./local.properties
+      - optional:file:../../local.properties
   application:
     name: auth-service
   datasource:
@@ -15,3 +19,7 @@ mybatis:
 
 reservation-service:
   reservations-url: ${RESERVATION_SERVICE_RESERVATIONS_URL:http://localhost:8082/reservations}
+
+jwt:
+  secret: ${JWT_SECRET:study-project-shared-secret-change-me}
+  access-token-expire-minutes: ${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:60}
