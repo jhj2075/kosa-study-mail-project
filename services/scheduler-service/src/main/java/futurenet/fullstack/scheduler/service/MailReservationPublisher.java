@@ -5,11 +5,16 @@ import futurenet.fullstack.scheduler.domain.EmailQueue;
 import futurenet.fullstack.scheduler.domain.EmailReservation;
 import futurenet.fullstack.scheduler.dto.MailSendMessage;
 import futurenet.fullstack.scheduler.mapper.SchedulerMailMapper;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageBuilder;
+import org.springframework.amqp.core.MessageDeliveryMode;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -61,10 +66,10 @@ public class MailReservationPublisher {
       // RabbitMQ publish
       String payload = jsonMapper.writeValueAsString(message);
 
-      rabbitTemplate.convertAndSend(
+      rabbitTemplate.send(
           mailQueueProperties.exchange(),
           mailQueueProperties.routingKey(),
-          message
+          createRabbitMessage(payload, messageId)
       );
 
       // EMAIL_QUEUE 저장
@@ -106,5 +111,15 @@ public class MailReservationPublisher {
           exception
       );
     }
+  }
+
+  private Message createRabbitMessage(String payload, String messageId) {
+    return MessageBuilder
+        .withBody(payload.getBytes(StandardCharsets.UTF_8))
+        .setContentType(MessageProperties.CONTENT_TYPE_JSON)
+        .setContentEncoding(StandardCharsets.UTF_8.name())
+        .setMessageId(messageId)
+        .setDeliveryMode(MessageDeliveryMode.PERSISTENT)
+        .build();
   }
 }

@@ -2,6 +2,7 @@ package futurenet.fullstack.auth.controller;
 
 import java.time.Duration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
@@ -25,8 +26,13 @@ import lombok.RequiredArgsConstructor;
 public class AuthPageController {
 
     private static final Duration ACCESS_TOKEN_MAX_AGE = Duration.ofHours(1);
+    private static final String LOGIN_ERROR_MESSAGE = "아이디 또는 비밀번호를 확인해주세요.";
+    private static final String REGISTER_ERROR_MESSAGE = "회원가입 정보를 확인해주세요.";
 
     private final AuthService authService;
+
+    @Value("${reservation-service.reservations-url:http://localhost:8082/reservations}")
+    private String reservationsUrl;
 
     @GetMapping("/")
     public String root(Authentication authentication) {
@@ -34,7 +40,7 @@ public class AuthPageController {
             return "redirect:/login";
         }
 
-        return "redirect:/home";
+        return redirectToReservations();
     }
 
     @GetMapping("/login")
@@ -55,9 +61,9 @@ public class AuthPageController {
         try {
             LoginResponse loginResponse = authService.login(request);
             response.addHeader(HttpHeaders.SET_COOKIE, createAccessTokenCookie(loginResponse.getAccessToken()));
-            return "redirect:/home";
+            return redirectToReservations();
         } catch (RuntimeException e) {
-            model.addAttribute("error", e.getMessage());
+            model.addAttribute("error", LOGIN_ERROR_MESSAGE);
             return "auth/login";
         }
     }
@@ -82,7 +88,7 @@ public class AuthPageController {
             redirectAttributes.addFlashAttribute("message", "회원가입이 완료되었습니다. 로그인해주세요.");
             return "redirect:/login";
         } catch (RuntimeException e) {
-            model.addAttribute("error", e.getMessage());
+            model.addAttribute("error", REGISTER_ERROR_MESSAGE);
             return "auth/register";
         }
     }
@@ -118,5 +124,9 @@ public class AuthPageController {
                 .maxAge(Duration.ZERO)
                 .build()
                 .toString();
+    }
+
+    private String redirectToReservations() {
+        return "redirect:" + reservationsUrl;
     }
 }

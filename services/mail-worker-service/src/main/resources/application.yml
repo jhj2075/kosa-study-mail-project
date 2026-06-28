@@ -21,8 +21,14 @@ spring:
   mail:
     host: ${SMTP_HOST:localhost}
     port: ${SMTP_PORT:1025}
-    username: ${SMTP_USERNAME:}
-    password: ${SMTP_PASSWORD:}
+    username: ${SMTP_USERNAME:greeting}
+    password: ${SMTP_PASSWORD:1004}
+    properties:
+      mail:
+        smtp:
+          auth: ${SMTP_AUTH:false}
+          starttls:
+            enable: ${SMTP_STARTTLS_ENABLE:false}
 
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
@@ -33,3 +39,7 @@ mail-queue:
   queue: ${MAIL_QUEUE:mail.send.queue}
   dead-letter-exchange: ${MAIL_DLX:mail.dlx}
   dead-letter-queue: ${MAIL_DLQ:mail.send.dlq}
+
+mail-worker:
+  from: ${MAIL_FROM:no-reply@localhost}
+  max-retry-count: ${MAIL_SEND_MAX_RETRY_COUNT:3}
