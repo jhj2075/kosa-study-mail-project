@@ -42,3 +42,4 @@ mail-queue:
 
 mail-worker:
   from: ${MAIL_FROM:no-reply@localhost}
+  max-retry-count: ${MAIL_SEND_MAX_RETRY_COUNT:3}

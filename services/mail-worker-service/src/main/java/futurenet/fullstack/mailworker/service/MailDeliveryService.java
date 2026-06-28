@@ -60,7 +60,7 @@ public class MailDeliveryService {
     );
 
     try {
-      sendMail(reservation);
+      sendMailWithRetry(message, queueId, reservation);
       mailWorkerMapper.markSent(message.emailId());
 
       if (queueId != null) {
@@ -89,7 +89,10 @@ public class MailDeliveryService {
           message.emailId(),
           queueId,
           "FAILED",
-          trimMessage(exception.getMessage())
+          trimMessage(
+              "Failed after " + mailSenderProperties.retryLimit()
+                  + " retry attempt(s): " + exception.getMessage()
+          )
       );
 
       log.error("Failed to send reservation mail. emailId={}, messageId={}",
@@ -111,6 +114,45 @@ public class MailDeliveryService {
     );
 
     javaMailSender.send(mailMessage);
+  }
+
+  private void sendMailWithRetry(
+      MailSendMessage message,
+      Long queueId,
+      EmailReservation reservation
+  ) {
+    int retryLimit = mailSenderProperties.retryLimit();
+    int retryCount = 0;
+
+    while (true) {
+      try {
+        sendMail(reservation);
+        return;
+      } catch (MailException exception) {
+        if (retryCount >= retryLimit) {
+          throw exception;
+        }
+
+        retryCount++;
+        mailWorkerMapper.insertSendLog(
+            message.emailId(),
+            queueId,
+            "RETRY",
+            trimMessage(
+                "Retry " + retryCount + "/" + retryLimit
+                    + " after send failure: " + exception.getMessage()
+            )
+        );
+
+        log.warn("Retrying reservation mail. emailId={}, messageId={}, retry={}/{}",
+            message.emailId(),
+            message.messageId(),
+            retryCount,
+            retryLimit,
+            exception
+        );
+      }
+    }
   }
 
   private boolean isPublishTransactionNotVisibleYet(String status) {
